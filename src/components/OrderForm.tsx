@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -20,19 +19,12 @@ interface OrderFormProps {
 export default function OrderForm({ onClose }: OrderFormProps) {
   const { items, totalPrice, clearCart } = useCart();
   const { t } = useLanguage();
-  const { user } = useAuth();
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [submitting, setSubmitting] = useState(false);
   
-  // Kullanıcı giriş yapmışsa bilgilerini otomatik doldur
-  useEffect(() => {
-    if (user?.user_metadata?.full_name) {
-      setCustomerName(user.user_metadata.full_name);
-    }
-  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
