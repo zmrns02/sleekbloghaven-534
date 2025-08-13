@@ -14,13 +14,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     autoRefreshToken: true,
   },
-  // Geliştirme ortamında RLS politikalarını tamamen devre dışı bırak
-  global: {
-    headers: {
-      'x-supabase-bypass-rls': 'true',
-      'x-client-info': 'sleekbloghaven-dev'
-    }
-  },
   db: {
     schema: 'public'
   }
