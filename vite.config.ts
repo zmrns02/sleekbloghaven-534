@@ -15,11 +15,29 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: false,
+    assetsDir: 'assets',
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
     rollupOptions: {
       output: {
+        entryFileNames: '[name].[hash].js',
+        chunkFileNames: '[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]',
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          animations: ['framer-motion']
+          animations: ['framer-motion'],
+          ui: [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-label',
+            '@radix-ui/react-radio-group',
+            '@radix-ui/react-slot'
+          ]
         }
       }
     }

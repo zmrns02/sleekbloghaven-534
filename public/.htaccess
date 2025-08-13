@@ -4,15 +4,19 @@ RewriteRule ^index\.html$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-l
-RewriteRule . /index.html [L]
+RewriteRule . index.html [L]
 
-# www olmadan yönlendirme
-RewriteCond %{HTTP_HOST} ^www\.balkanporsgrunn\.com [NC]
-RewriteRule ^(.*)$ https://balkanporsgrunn.com/$1 [L,R=301]
+# Domain yönlendirmeleri
+RewriteCond %{HTTP_HOST} ^www\.stordalens\.com [NC]
+RewriteRule ^(.*)$ https://stordalens.com/$1 [L,R=301]
 
 # HTTPS yönlendirmesi
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Redirect ba.stordalens.com to stordalens.com
+RewriteCond %{HTTP_HOST} ^ba\.stordalens\.com [NC]
+RewriteRule ^(.*)$ https://stordalens.com/$1 [L,R=301]
 
 # Browser caching
 <IfModule mod_expires.c>
@@ -22,4 +26,14 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
     ExpiresByType image/png "access plus 1 year"
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+# Set correct MIME types for JavaScript modules
+<IfModule mod_mime.c>
+    AddType application/javascript .js
+    AddType application/javascript .mjs
+    AddType application/javascript .tsx
+    AddType application/javascript .jsx
+    AddType application/javascript .ts
+    AddType text/javascript .js .mjs .tsx .jsx .ts
 </IfModule>

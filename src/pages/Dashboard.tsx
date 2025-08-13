@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { CategoryManager } from '@/components/admin/CategoryManager';
 import { MenuItemManager } from '@/components/admin/MenuItemManager';
 import { BarChart3, ShoppingCart, Users, Settings, Moon, Sun, Languages, Menu as MenuIcon, Clock, MapPin, Phone, Mail, Edit3, Save, X, Check, AlertCircle, LogOut, Package, CreditCard, Trash2, Printer } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
@@ -25,7 +25,7 @@ import { CategoryList } from '@/components/admin/CategoryList';
 const Dashboard = () => {
   const { t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const { toast } = useToast();
   const { orders, loading, updateOrderStatus, deleteOrder: deleteOrderFromHook } = useOrders();
   const [editingContact, setEditingContact] = useState(false);
@@ -39,6 +39,11 @@ const Dashboard = () => {
     address: 'Storgata 101, 3921 Porsgrunn',
     hours: 'Man-Tor: 10:00-22:00, Fre: 10:00-23:00, Lör: 13:00-23:00, Søn: 13:00-22:00'
   });
+  
+  // Sadece admin kullanıcıları Dashboard'a erişebilir
+  if (!user || !isAdmin) {
+    return <Navigate to="/" replace />;
+  }
 
   // Otomatik siparişler sayfasına dönüş (1 dakika boşta kalırsa)
   useEffect(() => {

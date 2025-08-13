@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://stordalens.com/sitemap.xml

@@ -92,22 +92,68 @@ export function useOrders() {
     items: Array<{ id: string; name: string; price: number; quantity: number; }>;
     total_amount: number;
     payment_method: string;
+    status: string;
     notes?: string;
   }) => {
     try {
+      console.log('createOrder çağrıldı:', JSON.stringify(orderData, null, 2));
+      
+      // Sipariş verilerini kontrol et
+      if (!orderData.customer_name || !orderData.customer_phone || orderData.items.length === 0) {
+        console.error('Validasyon hatası: Eksik alanlar');
+        throw new Error('validation_error');
+      }
+
+      // Sipariş verilerini düzenle - payment_method alanını kontrol et
+      const cleanOrderData = {
+        ...orderData,
+        payment_method: orderData.payment_method || 'cash',
+        status: orderData.status || 'pending'
+      };
+
+      console.log('Supabase\'e sipariş gönderiliyor...', JSON.stringify(cleanOrderData, null, 2));
+      
+      // Supabase istemcisinin RLS bypass ayarını kontrol et
+      console.log('Supabase headers:', supabase.headers);
+      
       const { data, error } = await supabase
         .from('orders')
-        .insert([orderData])
+        .insert([cleanOrderData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase hatası:', error);
+        throw error;
+      }
       
-      toast.success(t('order.submit') || 'Siparişiniz başarıyla alındı!');
+      console.log('Sipariş başarıyla oluşturuldu:', data);
+      toast.success(t('order.success') || 'Siparişiniz başarıyla alındı!');
       return { data, error: null };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating order:', error);
-      toast.error(t('order.submit') || 'Sipariş oluşturulurken hata oluştu');
+      let errorMessage = t('order.error') || 'Sipariş oluşturulurken hata oluştu';
+      
+      // Daha açıklayıcı hata mesajları
+      if (error?.message) {
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = t('order.networkError') || errorMessage + ': İnternet bağlantınızı kontrol edin';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = t('order.timeoutError') || errorMessage + ': Sunucu yanıt vermiyor, lütfen daha sonra tekrar deneyin';
+        } else if (error.message.includes('permission') || error.message.includes('auth')) {
+          errorMessage = t('order.authError') || errorMessage + ': Yetkilendirme hatası';
+        } else if (error.message.includes('validation_error')) {
+          errorMessage = t('order.validationError') || errorMessage + ': Lütfen tüm gerekli alanları doldurun';
+        } else if (error.code === '23505') {
+          // Duplicate key error
+          errorMessage = t('order.duplicateError') || errorMessage + ': Bu sipariş zaten mevcut';
+        } else if (error.code === '23503') {
+          // Foreign key error
+          errorMessage = t('order.referenceError') || errorMessage + ': Geçersiz ürün referansı';
+        }
+      }
+      
+      toast.error(errorMessage);
       return { data: null, error };
     }
   };

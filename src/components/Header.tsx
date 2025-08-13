@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, Menu, X, Settings } from 'lucide-react';
+import { ShoppingCart, Menu, X, Settings, LogOut, LogIn, User } from 'lucide-react';
 import { useCart } from './CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/hooks/useAuth';
 import CartPanel from './CartPanel';
 import { Link } from 'react-router-dom';
 
@@ -11,6 +12,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { totalItems, setIsOpen } = useCart();
   const { t } = useLanguage();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -111,14 +113,38 @@ const Header = () => {
               </Link>
             </nav>
 
-            {/* Settings and Cart Buttons */}
+            {/* Settings, Auth and Cart Buttons */}
             <div className="flex items-center gap-2">
-              <Link 
-                to="/dashboard"
-                className="hidden md:block p-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors"
-              >
-                <Settings className="h-5 w-5" />
-              </Link>
+              {user ? (
+                <>
+                  <Link 
+                    to="/dashboard"
+                    className="hidden md:block p-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors"
+                  >
+                    <Settings className="h-5 w-5" />
+                  </Link>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      signOut();
+                      window.location.href = '/';
+                    }}
+                    className="hidden md:block p-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors"
+                    title={t('auth.signOut')}
+                  >
+                    <LogOut className="h-5 w-5" />
+                  </motion.button>
+                </>
+              ) : (
+                <Link 
+                  to="/auth"
+                  className="hidden md:block p-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors"
+                  title={t('auth.signIn')}
+                >
+                  <LogIn className="h-5 w-5" />
+                </Link>
+              )}
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
@@ -193,13 +219,37 @@ const Header = () => {
                   {t('nav.contact')}
                   <span className="absolute inset-x-0 bottom-0 h-0.5 bg-balkan-yellow transform scale-x-0 group-hover:scale-x-100 transition-transform duration-200"></span>
                 </button>
-                <Link 
-                  to="/dashboard"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors"
-                >
-                  {t('nav.dashboard')}
-                </Link>
+                {user ? (
+                  <>
+                    <Link 
+                      to="/dashboard"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors px-4 py-2"
+                    >
+                      {t('nav.dashboard')}
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        signOut();
+                        window.location.href = '/';
+                      }}
+                      className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors px-4 py-2 w-full text-left"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {t('auth.signOut')}
+                    </button>
+                  </>
+                ) : (
+                  <Link 
+                    to="/auth"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors px-4 py-2"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    {t('auth.signIn')}
+                  </Link>
+                )}
               </nav>
             </motion.div>
           )}

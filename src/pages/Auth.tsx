@@ -17,6 +17,7 @@ export default function Auth() {
 
   // Redirect if already authenticated
   if (user && !loading) {
+    // Allow normal users to register but redirect to home instead of dashboard
     return <Navigate to="/" replace />;
   }
 

@@ -17,6 +17,7 @@ export function AdminRoute({ children }: AdminRouteProps) {
     );
   }
 
+  // Kullanıcı giriş yapmamışsa, giriş sayfasına yönlendir
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
