@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useOrders } from '@/hooks/useOrders';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -9,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Phone, User, FileText, CreditCard } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 
 
 interface OrderFormProps {
@@ -19,6 +19,7 @@ interface OrderFormProps {
 export default function OrderForm({ onClose }: OrderFormProps) {
   const { items, totalPrice, clearCart } = useCart();
   const { t } = useLanguage();
+  const { createOrder } = useOrders();
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
@@ -48,7 +49,7 @@ export default function OrderForm({ onClose }: OrderFormProps) {
     setSubmitting(true);
 
     try {
-      // Sipariş verilerini hazırla - sadece gerekli alanları içerecek şekilde basitleştirildi
+      // Sipariş verilerini hazırla
       const orderData = {
         customer_name: customerName.trim(),
         customer_phone: customerPhone.trim(),
@@ -64,29 +65,21 @@ export default function OrderForm({ onClose }: OrderFormProps) {
         status: 'pending'
       };
       
-      console.log('Sipariş gönderiliyor:', JSON.stringify(orderData, null, 2));
-      
-      // Doğrudan Supabase'e sipariş ekle
-      const { data, error } = await supabase
-        .from('orders')
-        .insert([orderData])
-        .select()
-        .single();
+      // useOrders hook'unu kullanarak sipariş oluştur
+      const { data, error } = await createOrder(orderData);
       
       if (error) {
-        console.error('Sipariş hatası:', error);
-        toast.error(t('order.error') || 'Sipariş oluşturulurken hata oluştu');
-        setSubmitting(false);
+        // Error handling is already done in useOrders hook
         return;
       }
       
-      console.log('Sipariş başarılı:', data);
-      toast.success(t('order.success') || 'Siparişiniz başarıyla alındı!');
+      // Success message is already shown in useOrders hook
       clearCart();
       onClose();
     } catch (err) {
       console.error('Order submission error:', err);
       toast.error(t('order.error'));
+    } finally {
       setSubmitting(false);
     }
   };
